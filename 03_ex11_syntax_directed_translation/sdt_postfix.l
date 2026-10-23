@@ -1,5 +1,13 @@
 %{
-#include "sdt_postfix.tab.h"
+#if defined(__has_include)
+  #if __has_include("sdt_postfix.tab.h")
+    #include "sdt_postfix.tab.h"
+  #else
+    #include "y.tab.h"
+  #endif
+#else
+  #include "y.tab.h"
+#endif
 #include <string.h>
 %}
 

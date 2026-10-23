@@ -180,7 +180,6 @@ int evaltree ( node *p )
     return val;
 }
 
-#ifdef COMPILE_WITH_LEX_YACC
 #include "lex.yy.c"
 #include "expr.tab.c"
 
@@ -189,4 +188,3 @@ int main ()
     yyparse();
     exit(0);
 }
-#endif

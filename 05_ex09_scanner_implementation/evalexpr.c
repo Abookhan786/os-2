@@ -74,12 +74,7 @@ typedef struct _treenode {
 // Defines parsetree as a pointer to a tree node 
 typedef treenode *parsetree;
 
-#ifdef COMPILE_WITH_FLEX
 #include "lex.yy.c"
-#else
-extern int yylex(void);
-extern char *yytext;
-#endif
 
 // Function to insert an identifier into the symbol table 
 symbtbl insertid(symbtbl T, char *id, stnode **ref)
@@ -469,7 +464,6 @@ int evaltree(parsetree PT)
     return 0;
 }
 
-#ifdef COMPILE_MAIN
 // Main function 
 int main()
 {
@@ -495,4 +489,3 @@ int main()
     // Terminate the program successfully 
     exit(0);
 }
-#endif

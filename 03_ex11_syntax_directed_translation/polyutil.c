@@ -305,7 +305,6 @@ void printderivative ( node *p )
     }
 }
 
-#ifdef COMPILE_WITH_LEX_YACC
 #include "lex.yy.c"
 #include "poly.tab.c"
 
@@ -322,4 +321,3 @@ int main ( int argc, char *argv[] )
     printf("\n+++ f'(x) = "); printderivative(PT); printf("\n");
     return 0;
 }
-#endif
