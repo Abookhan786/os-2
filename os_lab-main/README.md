@@ -60,6 +60,7 @@ This repository also contains production-ready C implementations for the most fa
 | Program File | IPC Mechanism | Description | Compilation Command |
 |---|---|---|---|
 | [`ipc_pipe_echo_transform.c`](ipc_pipe_echo_transform.c) | **UNIX Pipes (Two-Way)** | Bidirectional parent-child string transformation (case toggle & reverse) | `gcc -Wall -o ipc_pipe_echo_transform ipc_pipe_echo_transform.c` |
+| [`ipc_prime_filter_pipe.c`](ipc_prime_filter_pipe.c) | **UNIX Pipes (Two-Way)** | Parent sends array; Child filters only prime numbers and returns them to Parent | `gcc -Wall -o ipc_prime_filter_pipe ipc_prime_filter_pipe.c` |
 | [`ipc_string_char_counter.c`](ipc_string_char_counter.c) | **UNIX Pipes (Two-Way)** | Parent sends string; Child counts vowels, consonants, digits, spaces, words & returns stats struct | `gcc -Wall -o ipc_string_char_counter ipc_string_char_counter.c` |
 | [`ipc_producer_consumer_shm.c`](ipc_producer_consumer_shm.c) | **Shared Memory + POSIX Semaphores** | Classic Bounded-Buffer Producer (Parent) / Consumer (Child) with `mutex`, `empty`, `full` | `gcc -Wall -o ipc_producer_consumer_shm ipc_producer_consumer_shm.c -lpthread` |
 | [`ipc_collatz_pipe.c`](ipc_collatz_pipe.c) | **UNIX Pipe** | Silberschatz Problem 3.21: Child calculates Collatz ($3n+1$) sequence, parent reads & prints | `gcc -Wall -o ipc_collatz_pipe ipc_collatz_pipe.c` |
