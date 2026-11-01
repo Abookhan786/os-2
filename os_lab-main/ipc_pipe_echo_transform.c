@@ -26,24 +26,17 @@
 
 #define BUFFER_SIZE 256
 
-// Helper function to toggle case and reverse a string
+// Helper function to reverse the case of every character in a string
 void transform_string(char *str) {
     int len = strlen(str);
 
-    // Toggle letter case
+    // Reverse letter case (e.g. "Hi There" -> "hI tHERE")
     for (int i = 0; i < len; i++) {
         if (isupper((unsigned char)str[i])) {
             str[i] = tolower((unsigned char)str[i]);
         } else if (islower((unsigned char)str[i])) {
             str[i] = toupper((unsigned char)str[i]);
         }
-    }
-
-    // Reverse the string in-place
-    for (int i = 0, j = len - 1; i < j; i++, j--) {
-        char temp = str[i];
-        str[i] = str[j];
-        str[j] = temp;
     }
 }
 

@@ -71,6 +71,10 @@ This repository also contains production-ready C implementations for the most fa
 | [`avg_min_max.c`](avg_min_max.c) | **Shared Memory (Multi-Child)** | Parent forks 3 children to compute average, maximum, and minimum concurrently | `gcc -Wall -o avg_min_max avg_min_max.c` |
 | [`ipc_multigame_pipes.c`](ipc_multigame_pipes.c) | **UNIX Pipes** | John & Michael turn-based number multiplication race game | `gcc -Wall -o ipc_multigame_pipes ipc_multigame_pipes.c` |
 | [`ipc_multigame_sm.c`](ipc_multigame_sm.c) | **Shared Memory + Semaphores** | Turn-based multiplication race synchronized with semaphores | `gcc -Wall -o ipc_multigame_sm ipc_multigame_sm.c -lpthread` |
+| [`hunter_game_using_shm.c`](hunter_game_using_shm.c) | **System V Shared Memory** | Ex 3 Q5: Hunter Game implemented using shared memory (`shmget`/`shmat`) | `gcc -Wall -o hunter_game_using_shm hunter_game_using_shm.c` |
+| [`case_reversal_shm.c`](case_reversal_shm.c) | **System V Shared Memory** | Ex 3 Q5: String character case reversal using shared memory | `gcc -Wall -o case_reversal_shm case_reversal_shm.c` |
+| [`shm_posix_producer.c`](shm_posix_producer.c) | **POSIX Shared Memory + Named Pipes** | Ex 3 Q6: 4 KB / 512-slot 8-byte ("freeeee") producer with FIFO notify | `gcc -Wall -o shm_posix_producer shm_posix_producer.c -lrt` |
+| [`shm_posix_consumer.c`](shm_posix_consumer.c) | **POSIX Shared Memory + Named Pipes** | Ex 3 Q6: 4 KB / 512-slot 8-byte consumer with FIFO notify (sleep 1s) | `gcc -Wall -o shm_posix_consumer shm_posix_consumer.c -lrt` |
 
 ---
 
