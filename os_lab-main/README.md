@@ -1,6 +1,6 @@
-# Top 25 Famous Shell Programming Questions (OS Lab)
+# Top 35 Famous Shell Programming Questions & IPC C Labs (OS Lab)
 
-A curated compilation of the **top 25 most frequently asked Shell Scripting (Bash) programs** for Operating Systems laboratory exams, practical viva, and technical interviews.
+A comprehensive compilation of the **top 35 most frequently asked Shell Scripting (Bash) programs** and **Inter-Process Communication (IPC) C programs** for Operating Systems laboratory exams, practical viva, and technical interviews.
 
 Each problem includes:
 - **Problem Statement**
@@ -12,6 +12,7 @@ Each problem includes:
 
 ## 📋 Table of Contents
 
+### Core Shell Scripting
 1. [Even or Odd Checker](#1-check-whether-a-number-is-even-or-odd)
 2. [Largest of Three Numbers](#2-find-the-largest-among-three-numbers)
 3. [Leap Year Checker](#3-check-whether-a-year-is-a-leap-year)
@@ -37,6 +38,18 @@ Each problem includes:
 23. [Compare Two Files for Differences](#23-compare-two-files-and-check-if-identical)
 24. [Find Files Modified in the Last N Days](#24-find-files-modified-in-the-last-n-days-or-exceeding-a-size)
 25. [Automated Timestamped Directory Backup](#25-automated-timestamped-directory-backup-and-compression)
+
+### Advanced Exam Problems (Arrays, Strings & Math)
+26. [Sum of Elements at Odd and Even Indices in an Array](#26-sum-of-elements-at-odd-and-even-indices-in-an-array)
+27. [Sum of Even and Odd Digits in a Number](#27-sum-of-even-and-odd-digits-in-a-number)
+28. [Second Largest Element in an Array](#28-find-the-second-largest-element-in-an-array)
+29. [Linear Search & Binary Search in Array](#29-linear-search-and-binary-search-in-an-array)
+30. [Count Occurrence / Frequency of Each Element in an Array](#30-count-frequency-of-each-element-in-an-array)
+31. [Matrix Addition in Shell Script](#31-matrix-addition-2d-matrix-in-shell-script)
+32. [Pyramid and Number Triangle Patterns](#32-pyramid-and-number-triangle-patterns)
+33. [String Character, Vowel & Word Counter](#33-count-vowels-consonants-digits-and-spaces-in-a-string)
+34. [Check if Two Strings are Anagrams](#34-check-if-two-strings-are-anagrams)
+35. [Decimal to Binary and Binary to Decimal Conversion](#35-decimal-to-binary-and-binary-to-decimal-conversion)
 
 ---
 
@@ -913,6 +926,344 @@ else
     echo "Backup failed!"
     exit 1
 fi
+```
+
+---
+
+### 26. Sum of Elements at Odd and Even Indices in an Array
+
+- **Concepts**: Bash arrays, index iteration, modulo arithmetic `$((i % 2))`, 0-based vs 1-based indexing.
+
+```bash
+#!/bin/bash
+# Description: Computes sum of elements at odd indices and even indices in an array
+
+read -p "Enter numbers separated by spaces: " -a arr
+n=${#arr[@]}
+
+sum_even=0
+sum_odd=0
+
+for (( i=0; i<n; i++ )); do
+    if [ $((i % 2)) -eq 0 ]; then
+        sum_even=$((sum_even + arr[i]))
+    else
+        sum_odd=$((sum_odd + arr[i]))
+    fi
+done
+
+echo "Array: [${arr[*]}]"
+echo "Sum of Elements at EVEN Indices (0, 2, 4, ...): $sum_even"
+echo "Sum of Elements at ODD  Indices (1, 3, 5, ...): $sum_odd"
+echo "Difference (Even Sum - Odd Sum)               : $((sum_even - sum_odd))"
+
+# Note on 1-based convention:
+# If the exam considers the first element as position 1:
+# - Position 1, 3, 5 (Odd Positions)   = $sum_even
+# - Position 2, 4, 6 (Even Positions)  = $sum_odd
+```
+
+**Sample Output:**
+```text
+Enter numbers separated by spaces: 10 20 30 40 50 60
+Array: [10 20 30 40 50 60]
+Sum of Elements at EVEN Indices (0, 2, 4, ...): 90
+Sum of Elements at ODD  Indices (1, 3, 5, ...): 120
+Difference (Even Sum - Odd Sum)               : -30
+```
+
+---
+
+### 27. Sum of Even and Odd Digits in a Number
+
+- **Concepts**: Extracting individual digits via `% 10`, conditional parity check on digit value.
+
+```bash
+#!/bin/bash
+# Description: Calculates sum of even digits and sum of odd digits in a given number
+
+read -p "Enter a number: " num
+temp=$num
+sum_even_digits=0
+sum_odd_digits=0
+
+while [ "$temp" -gt 0 ]; do
+    digit=$((temp % 10))
+    if [ $((digit % 2)) -eq 0 ]; then
+        sum_even_digits=$((sum_even_digits + digit))
+    else
+        sum_odd_digits=$((sum_odd_digits + digit))
+    fi
+    temp=$((temp / 10))
+done
+
+echo "Number             : $num"
+echo "Sum of Even Digits : $sum_even_digits"
+echo "Sum of Odd Digits  : $sum_odd_digits"
+```
+
+**Sample Output:**
+```text
+Enter a number: 482591
+Number             : 482591
+Sum of Even Digits : 14  (4 + 8 + 2)
+Sum of Odd Digits  : 15  (5 + 9 + 1)
+```
+
+---
+
+### 28. Find the Second Largest Element in an Array
+
+- **Concepts**: Single-pass traversal, maintaining first and second maxima, handling duplicates.
+
+```bash
+#!/bin/bash
+# Description: Finds the largest and second largest elements in an array
+
+read -p "Enter numbers separated by spaces: " -a arr
+n=${#arr[@]}
+
+if [ "$n" -lt 2 ]; then
+    echo "Error: Need at least 2 numbers."
+    exit 1
+fi
+
+largest=-999999
+second_largest=-999999
+
+for num in "${arr[@]}"; do
+    if [ "$num" -gt "$largest" ]; then
+        second_largest=$largest
+        largest=$num
+    elif [ "$num" -gt "$second_largest" ] && [ "$num" -ne "$largest" ]; then
+        second_largest=$num
+    fi
+done
+
+echo "Array          : ${arr[*]}"
+echo "Largest Number : $largest"
+echo "Second Largest : $second_largest"
+```
+
+---
+
+### 29. Linear Search and Binary Search in an Array
+
+- **Concepts**: Search algorithms, while loop binary division `mid = (low + high) / 2`.
+
+```bash
+#!/bin/bash
+# Description: Implements Binary Search on a sorted array
+
+read -p "Enter sorted numbers separated by space: " -a arr
+read -p "Enter target element to search: " key
+
+low=0
+high=$((${#arr[@]} - 1))
+found=0
+
+while [ "$low" -le "$high" ]; do
+    mid=$(( (low + high) / 2 ))
+    
+    if [ "${arr[mid]}" -eq "$key" ]; then
+        echo "Element $key found at index $mid (position $((mid + 1)))."
+        found=1
+        break
+    elif [ "${arr[mid]}" -lt "$key" ]; then
+        low=$((mid + 1))
+    else
+        high=$((mid - 1))
+    fi
+done
+
+if [ "$found" -eq 0 ]; then
+    echo "Element $key is not present in the array."
+fi
+```
+
+---
+
+### 30. Count Frequency of Each Element in an Array
+
+- **Concepts**: Associative arrays (`declare -A`), frequency mapping, key iteration.
+
+```bash
+#!/bin/bash
+# Description: Counts the frequency of occurrence of each element in an array
+
+read -p "Enter elements separated by spaces: " -a arr
+declare -A freq
+
+for item in "${arr[@]}"; do
+    freq["$item"]=$(( freq["$item"] + 1 ))
+done
+
+echo "--- Element Frequency Table ---"
+for key in "${!freq[@]}"; do
+    echo "Element '$key' appears ${freq[$key]} time(s)"
+done
+```
+
+---
+
+### 31. Matrix Addition (2D Matrix) in Shell Script
+
+- **Concepts**: Simulating 2D arrays using 1D indexing `[i * cols + j]`, nested loops, formatted printing.
+
+```bash
+#!/bin/bash
+# Description: Performs addition of two R x C matrices
+
+read -p "Enter number of rows: " rows
+read -p "Enter number of cols: " cols
+
+echo "Enter elements of Matrix A ($((rows * cols)) numbers separated by space):"
+read -a matA
+
+echo "Enter elements of Matrix B ($((rows * cols)) numbers separated by space):"
+read -a matB
+
+echo "--- Resultant Matrix (A + B) ---"
+for (( i=0; i<rows; i++ )); do
+    for (( j=0; j<cols; j++ )); do
+        idx=$(( i * cols + j ))
+        sum=$(( matA[idx] + matB[idx] ))
+        printf "%4d " "$sum"
+    done
+    printf "\n"
+done
+```
+
+---
+
+### 32. Pyramid and Number Triangle Patterns
+
+- **Concepts**: Nested `for` loops, printing spaces and characters, formatting.
+
+```bash
+#!/bin/bash
+# Description: Prints a star pyramid and Floyd's triangle of height N
+
+read -p "Enter height of pyramid: " n
+
+echo "Star Pyramid:"
+for (( i=1; i<=n; i++ )); do
+    # Print leading spaces
+    for (( s=i; s<n; s++ )); do
+        printf " "
+    done
+    # Print stars
+    for (( j=1; j<=(2*i - 1); j++ )); do
+        printf "*"
+    done
+    printf "\n"
+done
+
+echo ""
+echo "Floyd's Number Triangle:"
+count=1
+for (( i=1; i<=n; i++ )); do
+    for (( j=1; j<=i; j++ )); do
+        printf "%-3d " "$count"
+        count=$((count + 1))
+    done
+    printf "\n"
+done
+```
+
+---
+
+### 33. Count Vowels, Consonants, Digits, and Spaces in a String
+
+- **Concepts**: String character iteration `${str:i:1}`, regex pattern matching `[[ $char =~ ... ]]`.
+
+```bash
+#!/bin/bash
+# Description: Counts vowels, consonants, digits, spaces, and special symbols in a string
+
+read -p "Enter a string: " input
+
+vowels=0
+consonants=0
+digits=0
+spaces=0
+special=0
+
+len=${#input}
+
+for (( i=0; i<len; i++ )); do
+    ch="${input:i:1}"
+    case "$ch" in
+        [aeiouAEIOU]) vowels=$((vowels + 1)) ;;
+        [a-zA-Z])    consonants=$((consonants + 1)) ;;
+        [0-9])        digits=$((digits + 1)) ;;
+        [[:space:]])  spaces=$((spaces + 1)) ;;
+        *)            special=$((special + 1)) ;;
+    esac
+done
+
+echo "String Analysis for: \"$input\""
+echo "Vowels             : $vowels"
+echo "Consonants         : $consonants"
+echo "Digits             : $digits"
+echo "Spaces             : $spaces"
+echo "Special Characters : $special"
+echo "Total Length       : $len"
+```
+
+---
+
+### 34. Check if Two Strings are Anagrams
+
+- **Concepts**: String sorting using `fold`, `sort`, `paste`, equality check.
+
+```bash
+#!/bin/bash
+# Description: Checks whether two words are anagrams of each other
+
+read -p "Enter first string : " str1
+read -p "Enter second string: " str2
+
+# Clean strings (lowercase and remove non-letters)
+s1=$(echo "$str1" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alpha:]' | fold -w1 | sort | tr -d '\n')
+s2=$(echo "$str2" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alpha:]' | fold -w1 | sort | tr -d '\n')
+
+if [ "$s1" = "$s2" ]; then
+    echo "\"$str1\" and \"$str2\" are ANAGRAMS."
+else
+    echo "\"$str1\" and \"$str2\" are NOT anagrams."
+fi
+```
+
+---
+
+### 35. Decimal to Binary and Binary to Decimal Conversion
+
+- **Concepts**: Number base conversion, binary weights, `bc` base translation `obase=2; ibase=2`.
+
+```bash
+#!/bin/bash
+# Description: Base conversion between Decimal and Binary
+
+echo "1. Decimal to Binary"
+echo "2. Binary to Decimal"
+read -p "Choose option [1 or 2]: " choice
+
+case $choice in
+    1)
+        read -p "Enter decimal number: " dec
+        bin=$(echo "obase=2; $dec" | bc)
+        echo "Binary equivalent: $bin"
+        ;;
+    2)
+        read -p "Enter binary string: " bin
+        dec=$(echo "ibase=2; $bin" | bc)
+        echo "Decimal equivalent: $dec"
+        ;;
+    *)
+        echo "Invalid choice."
+        ;;
+esac
 ```
 
 ---
