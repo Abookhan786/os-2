@@ -15,7 +15,6 @@ int main() {
 
     char buffer[SIZE];
 
-    // Create socket
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (server_fd < 0) {
@@ -23,12 +22,10 @@ int main() {
         return 1;
     }
 
-    // Configure server address
     server.sin_family = AF_INET;
     server.sin_port = htons(PORT);
     server.sin_addr.s_addr = INADDR_ANY;
 
-    // Bind socket
     if (bind(server_fd,
              (struct sockaddr *)&server,
              sizeof(server)) < 0) {
@@ -38,7 +35,6 @@ int main() {
         return 1;
     }
 
-    // Listen
     if (listen(server_fd, 5) < 0) {
         perror("Listen failed");
         close(server_fd);
@@ -47,7 +43,6 @@ int main() {
 
     printf("[Server] Waiting for client...\n");
 
-    // Accept client
     client_fd = accept(server_fd,
                        (struct sockaddr *)&client,
                        &client_len);
@@ -60,14 +55,12 @@ int main() {
 
     printf("[Server] Client connected.\n");
 
-    // Receive message
     memset(buffer, 0, SIZE);
 
     recv(client_fd, buffer, SIZE, 0);
 
     printf("[Server] Received: %s\n", buffer);
 
-    // Send response
     char response[] = "Hello from server";
 
     send(client_fd,
@@ -77,7 +70,6 @@ int main() {
 
     printf("[Server] Response sent.\n");
 
-    // Close sockets
     close(client_fd);
     close(server_fd);
 

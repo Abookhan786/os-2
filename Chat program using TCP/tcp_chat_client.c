@@ -42,14 +42,12 @@ int main(int argc, char *argv[]) {
 
     INIT_NETWORK();
 
-    // 1. Create TCP socket (SOCK_STREAM)
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // 2. Set server address
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
@@ -60,7 +58,6 @@ int main(int argc, char *argv[]) {
     printf("         Target Server: %s:%d                       \n", target_ip, PORT);
     printf("====================================================\n\n");
 
-    // 3. Connect to server (initiates TCP 3-way handshake)
     if (connect(client_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("Connection to server failed. Make sure server is running");
         CLOSE_SOCKET(client_fd);
@@ -72,7 +69,7 @@ int main(int argc, char *argv[]) {
     printf("[CLIENT]: Type message and press Enter ('exit' to quit)\n\n");
 
     while (1) {
-        // 4. Send message to server
+
         printf("Client: ");
         memset(buffer, 0, BUFFER_SIZE);
         if (fgets(buffer, BUFFER_SIZE, stdin) == NULL) {
@@ -90,7 +87,6 @@ int main(int argc, char *argv[]) {
             break;
         }
 
-        // 5. Receive reply from server
         memset(buffer, 0, BUFFER_SIZE);
         int bytes_received = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
 
@@ -110,7 +106,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // 6. Cleanup & close socket
     CLOSE_SOCKET(client_fd);
     CLEANUP_NETWORK();
     printf("Client socket closed.\n");

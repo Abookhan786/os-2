@@ -14,7 +14,6 @@
 
 #define MAX_LEN 256
 
-/* Performs Modulo-2 XOR division on binary strings */
 void modulo2_divide(const char *dividend, const char *divisor, char *remainder, char *quotient) {
     int dividend_len = strlen(dividend);
     int divisor_len = strlen(divisor);
@@ -34,13 +33,11 @@ void modulo2_divide(const char *dividend, const char *divisor, char *remainder, 
     }
     quotient[q_idx] = '\0';
 
-    // Remainder is the last (divisor_len - 1) bits
     int rem_len = divisor_len - 1;
     strncpy(remainder, cur + dividend_len - rem_len, rem_len);
     remainder[rem_len] = '\0';
 }
 
-/* Displays detailed step-by-step XOR long division */
 void print_division_trace(const char *dividend, const char *divisor) {
     int dividend_len = strlen(dividend);
     int divisor_len = strlen(divisor);
@@ -90,7 +87,7 @@ int main() {
 
     if (fgets(choice, sizeof(choice), stdin) == NULL || choice[0] == '\n' || choice[0] == '1') {
         strcpy(message, "110101101101");
-        strcpy(generator, "100000111"); // x^8 + x^2 + x + 1
+        strcpy(generator, "100000111");
     } else if (choice[0] == '2') {
         strcpy(message, "1011001001001011");
         strcpy(generator, "100000111");
@@ -103,7 +100,6 @@ int main() {
 
     int deg_r = strlen(generator) - 1;
 
-    // 1. Sender: Augment message with r zeros
     char augmented[MAX_LEN];
     strcpy(augmented, message);
     for (int i = 0; i < deg_r; i++) {
@@ -123,7 +119,6 @@ int main() {
     char remainder[MAX_LEN], quotient[MAX_LEN];
     modulo2_divide(augmented, generator, remainder, quotient);
 
-    // 2. Transmitted codeword
     char transmitted[MAX_LEN];
     strcpy(transmitted, message);
     strcat(transmitted, remainder);
@@ -131,7 +126,6 @@ int main() {
     printf("\n>> Calculated CRC Checksum (Remainder) : %s\n", remainder);
     printf(">> Transmitted Codeword T(x)            : %s\n", transmitted);
 
-    // 3. Receiver Verification (No Error)
     printf("\n----------------------------------------------------------------------\n");
     printf("2. RECEIVER-SIDE VERIFICATION (NO ERROR)\n");
     printf("----------------------------------------------------------------------\n");
@@ -151,7 +145,6 @@ int main() {
         printf("Result            : REMAINDER IS ALL ZEROS -> [DATA ACCEPTED, NO ERROR]\n");
     }
 
-    // 4. Noise Simulation: Invert leftmost bit
     printf("\n----------------------------------------------------------------------\n");
     printf("3. NOISE SIMULATION: INVERTING LEFTMOST BIT\n");
     printf("----------------------------------------------------------------------\n");

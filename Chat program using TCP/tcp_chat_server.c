@@ -41,18 +41,15 @@ int main() {
 
     INIT_NETWORK();
 
-    // 1. Create TCP socket (SOCK_STREAM)
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // Reuse address option
     int opt = 1;
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt));
 
-    // 2. Bind socket to IP and Port
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -65,7 +62,6 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    // 3. Listen for incoming client connections
     if (listen(server_fd, 5) < 0) {
         perror("Listen failed");
         CLOSE_SOCKET(server_fd);
@@ -78,7 +74,6 @@ int main() {
     printf("   Waiting for incoming connection from client...   \n");
     printf("====================================================\n\n");
 
-    // 4. Accept client connection (TCP 3-way handshake completes here)
     if ((client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addr_len)) < 0) {
         perror("Accept failed");
         CLOSE_SOCKET(server_fd);
@@ -91,7 +86,7 @@ int main() {
     printf("[SERVER]: You can now chat! Type 'exit' to disconnect.\n\n");
 
     while (1) {
-        // 5. Receive message from client
+
         memset(buffer, 0, BUFFER_SIZE);
         int bytes_received = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
 
@@ -110,7 +105,6 @@ int main() {
             break;
         }
 
-        // 6. Send reply to client
         printf("Server: ");
         memset(buffer, 0, BUFFER_SIZE);
         if (fgets(buffer, BUFFER_SIZE, stdin) == NULL) {
@@ -129,7 +123,6 @@ int main() {
         }
     }
 
-    // 7. Cleanup & close sockets
     CLOSE_SOCKET(client_fd);
     CLOSE_SOCKET(server_fd);
     CLEANUP_NETWORK();

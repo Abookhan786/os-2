@@ -54,13 +54,11 @@
 #define DEFAULT_PORT 8053
 #define BUFFER_SIZE 1024
 
-// Structure for DNS Database Record
 typedef struct {
     char domain[128];
     char ip[64];
 } DNSEntry;
 
-// Local DNS Database / Cache
 static const DNSEntry dns_table[] = {
     {"www.google.com",    "142.250.190.46"},
     {"www.yahoo.com",     "98.137.11.163"},
@@ -74,7 +72,6 @@ static const DNSEntry dns_table[] = {
 
 static const int TABLE_SIZE = sizeof(dns_table) / sizeof(dns_table[0]);
 
-// Function to check if a string is an IP address format
 int is_ip_address(const char *str) {
     int dots = 0;
     for (int i = 0; str[i] != '\0'; i++) {
@@ -84,9 +81,8 @@ int is_ip_address(const char *str) {
     return (dots == 3);
 }
 
-// Perform DNS Lookup
 void resolve_dns(const char *query, char *response, size_t resp_len) {
-    // 1. Check if query is Reverse DNS (IP -> Domain)
+
     if (is_ip_address(query)) {
         for (int i = 0; i < TABLE_SIZE; i++) {
             if (strcmp(dns_table[i].ip, query) == 0) {
@@ -98,7 +94,6 @@ void resolve_dns(const char *query, char *response, size_t resp_len) {
         return;
     }
 
-    // 2. Check Local DNS Cache for Forward DNS (Domain -> IP)
     for (int i = 0; i < TABLE_SIZE; i++) {
         if (STRCASECMP(dns_table[i].domain, query) == 0) {
             snprintf(response, resp_len, "SUCCESS|FORWARD|%s|%s", query, dns_table[i].ip);
@@ -106,7 +101,6 @@ void resolve_dns(const char *query, char *response, size_t resp_len) {
         }
     }
 
-    // 3. Optional Fallback to System Resolver (gethostbyname)
     struct hostent *he = gethostbyname(query);
     if (he != NULL && he->h_addr_list[0] != NULL) {
         char *resolved_ip = inet_ntoa(*(struct in_addr *)he->h_addr_list[0]);
@@ -114,7 +108,6 @@ void resolve_dns(const char *query, char *response, size_t resp_len) {
         return;
     }
 
-    // 4. Domain Not Found
     snprintf(response, resp_len, "ERROR|Domain '%s' not found in DNS database", query);
 }
 
@@ -128,20 +121,17 @@ int main(int argc, char *argv[]) {
 
     INIT_NETWORK();
 
-    // 1. Create UDP Socket (SOCK_DGRAM)
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("[Server] Socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // 2. Prepare Server Address
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY; // Bind to all interfaces
+    server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
 
-    // 3. Bind UDP Socket
     if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("[Server] Bind failed");
         CLOSE_SOCKET(server_fd);
@@ -161,12 +151,10 @@ int main(int argc, char *argv[]) {
     printf("----------------------------------------------------------------\n");
     printf("[Server] Waiting for client DNS queries...\n\n");
 
-    // 4. Server Request-Response Loop
     while (1) {
         memset(buffer, 0, sizeof(buffer));
         memset(response, 0, sizeof(response));
 
-        // Receive DNS query from client
         int bytes_received = recvfrom(server_fd, buffer, sizeof(buffer) - 1, 0,
                                       (struct sockaddr *)&client_addr, &client_len);
         if (bytes_received < 0) {
@@ -176,7 +164,6 @@ int main(int argc, char *argv[]) {
 
         buffer[bytes_received] = '\0';
 
-        // Trim newline and carriage returns
         buffer[strcspn(buffer, "\r\n")] = '\0';
 
         char *client_ip = inet_ntoa(client_addr.sin_addr);
@@ -184,18 +171,15 @@ int main(int argc, char *argv[]) {
 
         printf("[Query Received] From [%s:%d] : \"%s\"\n", client_ip, client_port, buffer);
 
-        // Check for exit message
         if (STRCASECMP(buffer, "exit") == 0 || STRCASECMP(buffer, "quit") == 0) {
             printf("[Server] Client [%s:%d] disconnected.\n\n", client_ip, client_port);
             continue;
         }
 
-        // Perform DNS Resolution
         resolve_dns(buffer, response, sizeof(response));
 
         printf("[Server Response] Sending to [%s:%d] : %s\n\n", client_ip, client_port, response);
 
-        // Send resolved answer back to client
         sendto(server_fd, response, (int)strlen(response), 0,
                (struct sockaddr *)&client_addr, client_len);
     }

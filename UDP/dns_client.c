@@ -111,17 +111,14 @@ int main(int argc, char *argv[]) {
 
     INIT_NETWORK();
 
-    // 1. Create UDP Socket (SOCK_DGRAM)
     if ((client_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("[Client] Socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // Set 4-second receive timeout
     SET_TIMEOUT(client_fd, 4);
 
-    // 2. Prepare Server Address Structure
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(server_port);
@@ -140,31 +137,26 @@ int main(int argc, char *argv[]) {
     printf("   Type 'exit' or 'quit' to terminate.                         \n");
     printf("================================================================\n\n");
 
-    // 3. User Query Loop
     while (1) {
         printf("Enter Domain Name or IP: ");
         if (fgets(query, sizeof(query), stdin) == NULL) {
             break;
         }
 
-        // Strip newline and carriage return
         query[strcspn(query, "\r\n")] = '\0';
 
-        // Skip empty input
         if (strlen(query) == 0) {
             continue;
         }
 
-        // Check for exit
         if (strcmp(query, "exit") == 0 || strcmp(query, "quit") == 0) {
-            // Inform server
+
             sendto(client_fd, query, (int)strlen(query), 0,
                    (struct sockaddr *)&server_addr, addr_len);
             printf("[Client] Exiting...\n");
             break;
         }
 
-        // Send query to DNS server
         int bytes_sent = sendto(client_fd, query, (int)strlen(query), 0,
                                 (struct sockaddr *)&server_addr, addr_len);
         if (bytes_sent < 0) {
@@ -172,7 +164,6 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        // Receive response from DNS server
         memset(response, 0, sizeof(response));
         int bytes_received = recvfrom(client_fd, response, sizeof(response) - 1, 0,
                                       (struct sockaddr *)&server_addr, &addr_len);
@@ -185,7 +176,6 @@ int main(int argc, char *argv[]) {
 
         response[bytes_received] = '\0';
 
-        // Parse and display formatted response
         display_response(response);
     }
 

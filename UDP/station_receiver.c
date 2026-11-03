@@ -33,15 +33,14 @@
 #define STATION_PORT 5005
 #define BUFFER_SIZE 512
 
-/* Drone Telemetry Data Structure */
 typedef struct {
     int seq_num;
     char drone_id[16];
     double latitude;
     double longitude;
-    float altitude;      // Altitude in meters
-    float speed;         // Speed in km/h
-    int battery;         // Battery percentage
+    float altitude;
+    float speed;
+    int battery;
 } DroneTelemetry;
 
 int main() {
@@ -52,14 +51,12 @@ int main() {
 
     INIT_NETWORK();
 
-    // 1. Create UDP Datagram Socket
     if ((station_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Station socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // 2. Bind Station to Well-Known Port 5005
     memset(&station_addr, 0, sizeof(station_addr));
     station_addr.sin_family = AF_INET;
     station_addr.sin_addr.s_addr = INADDR_ANY;
@@ -88,14 +85,12 @@ int main() {
             break;
         }
 
-        // Check for end of transmission flag (seq_num == -1)
         if (telemetry.seq_num == -1) {
             printf("------+--------------+-------------+-------------+--------------+-------------+---------+-----------\n");
             printf("[STATION]: Drone '%s' landed / finished transmission.\n", telemetry.drone_id);
             break;
         }
 
-        // Determine Flight Status Alert
         char status[16] = "OPTIMAL";
         if (telemetry.battery < 20) {
             strcpy(status, "LOW BATT");
@@ -105,7 +100,6 @@ int main() {
             strcpy(status, "HIGH SPD");
         }
 
-        // Print real-time tracking line
         printf("%-5d | %-12s | %11.6f | %11.6f | %12.2f | %11.2f | %6d%% | %-10s\n",
                telemetry.seq_num,
                telemetry.drone_id,

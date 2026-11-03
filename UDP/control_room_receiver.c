@@ -33,15 +33,14 @@
 
 #define CONTROL_ROOM_PORT 6006
 
-/* Factory Machine Status Telemetry Structure */
 typedef struct {
     int seq_no;
     int machine_id;
     char machine_name[32];
-    float temperature;    // in Celsius
-    float pressure;       // in Bar
-    float vibration;      // in mm/s
-    int rpm;              // Motor RPM
+    float temperature;
+    float pressure;
+    float vibration;
+    int rpm;
 } MachineStatus;
 
 int main() {
@@ -52,14 +51,12 @@ int main() {
 
     INIT_NETWORK();
 
-    // 1. Create UDP socket
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // 2. Bind to Control Room Port
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -88,14 +85,12 @@ int main() {
             break;
         }
 
-        // Termination packet indicator
         if (status_pkt.seq_no == -1) {
             printf("------+--------+----------------------+-----------+------------+-------------+---------+------------------\n");
             printf("[CONTROL ROOM]: Sensor telemetry stream ended by Machine #%d.\n", status_pkt.machine_id);
             break;
         }
 
-        // Industrial Safety Rule Check
         char state_desc[32] = "[NORMAL]";
         if (status_pkt.temperature >= 85.0f || status_pkt.vibration >= 5.0f) {
             strcpy(state_desc, "! DANGER CRITICAL !");
@@ -103,7 +98,6 @@ int main() {
             strcpy(state_desc, "* WARNING HIGH *");
         }
 
-        // Print real-time sensor metrics
         printf("%-5d | #%-5d | %-20s | %7.1f C | %7.2f Bar | %8.2f mm/s | %6d | %-18s\n",
                status_pkt.seq_no,
                status_pkt.machine_id,

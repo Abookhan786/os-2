@@ -35,15 +35,14 @@
 #define STATION_PORT 5005
 #define STATION_IP "127.0.0.1"
 
-/* Drone Telemetry Data Structure */
 typedef struct {
     int seq_num;
     char drone_id[16];
     double latitude;
     double longitude;
-    float altitude;      // Altitude in meters
-    float speed;         // Speed in km/h
-    int battery;         // Battery percentage
+    float altitude;
+    float speed;
+    int battery;
 } DroneTelemetry;
 
 int main(int argc, char *argv[]) {
@@ -54,14 +53,12 @@ int main(int argc, char *argv[]) {
 
     INIT_NETWORK();
 
-    // 1. Create UDP Datagram Socket
     if ((drone_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Drone socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // 2. Set Destination (Ground Station) Address
     memset(&station_addr, 0, sizeof(station_addr));
     station_addr.sin_family = AF_INET;
     station_addr.sin_port = htons(STATION_PORT);
@@ -73,26 +70,23 @@ int main(int argc, char *argv[]) {
            target_ip, STATION_PORT, total_packets);
     printf("======================================================================\n\n");
 
-    // Initial Simulated Drone State
     DroneTelemetry telemetry;
     strcpy(telemetry.drone_id, "DRONE-ALPHA1");
-    telemetry.latitude = 13.082680;   // Base Latitude (e.g., Chennai, India)
-    telemetry.longitude = 80.270718;  // Base Longitude
-    telemetry.altitude = 45.0f;       // Base altitude (m)
-    telemetry.speed = 32.5f;          // Initial speed (km/h)
-    telemetry.battery = 100;          // 100% battery
+    telemetry.latitude = 13.082680;
+    telemetry.longitude = 80.270718;
+    telemetry.altitude = 45.0f;
+    telemetry.speed = 32.5f;
+    telemetry.battery = 100;
 
     for (int i = 1; i <= total_packets; i++) {
         telemetry.seq_num = i;
 
-        // Dynamic flight simulation updates
         telemetry.latitude += 0.00045;
         telemetry.longitude += 0.00032;
         telemetry.altitude += (i % 2 == 0) ? 5.5f : -2.0f;
         telemetry.speed += (i % 3 == 0) ? 3.0f : -1.5f;
-        telemetry.battery -= 1; // gradual battery discharge
+        telemetry.battery -= 1;
 
-        // 3. Fast, zero-handshake datagram transmission
         int sent_bytes = sendto(drone_fd, (const char *)&telemetry, sizeof(telemetry), 0,
                                 (struct sockaddr *)&station_addr, sizeof(station_addr));
 
@@ -105,11 +99,9 @@ int main(int argc, char *argv[]) {
                telemetry.seq_num, telemetry.latitude, telemetry.longitude,
                telemetry.altitude, telemetry.speed, telemetry.battery, sent_bytes);
 
-        // Transmit every 1 second (1000 ms) for real-time tracking
         SLEEP_MS(1000);
     }
 
-    // Send final landing / shutdown signal
     telemetry.seq_num = -1;
     sendto(drone_fd, (const char *)&telemetry, sizeof(telemetry), 0,
            (struct sockaddr *)&station_addr, sizeof(station_addr));

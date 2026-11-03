@@ -41,20 +41,17 @@ int main() {
 
     INIT_NETWORK();
 
-    // 1. Create UDP socket (SOCK_DGRAM)
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // 2. Configure server address structure
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY; // Listen on all network interfaces
+    server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(PORT);
 
-    // 3. Bind socket to port
     if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("Bind failed");
         CLOSE_SOCKET(server_fd);
@@ -68,10 +65,9 @@ int main() {
     printf("====================================================\n\n");
 
     while (1) {
-        // Clear buffer
+
         memset(buffer, 0, BUFFER_SIZE);
 
-        // 4. Receive message from client
         int bytes_received = recvfrom(server_fd, buffer, BUFFER_SIZE - 1, 0,
                                       (struct sockaddr *)&client_addr, &addr_len);
         if (bytes_received < 0) {
@@ -80,26 +76,23 @@ int main() {
         }
 
         buffer[bytes_received] = '\0';
-        // Remove trailing newline if present
+
         buffer[strcspn(buffer, "\r\n")] = '\0';
 
         printf("[Client %s:%d]: %s\n",
                inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), buffer);
 
-        // Check termination condition
         if (strcasecmp(buffer, "exit") == 0 || strcasecmp(buffer, "bye") == 0) {
             printf("\n[Server]: Client has left the chat. Shutting down...\n");
             break;
         }
 
-        // 5. Read response from server user
         printf("Server: ");
         if (fgets(buffer, BUFFER_SIZE, stdin) == NULL) {
             break;
         }
         buffer[strcspn(buffer, "\r\n")] = '\0';
 
-        // 6. Send reply back to client
         if (sendto(server_fd, buffer, strlen(buffer), 0,
                    (struct sockaddr *)&client_addr, addr_len) < 0) {
             perror("sendto error");
@@ -112,7 +105,6 @@ int main() {
         }
     }
 
-    // 7. Cleanup & close
     CLOSE_SOCKET(server_fd);
     CLEANUP_NETWORK();
     printf("Server socket closed.\n");

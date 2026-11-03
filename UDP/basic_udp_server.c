@@ -15,7 +15,6 @@ int main() {
 
     char buffer[SIZE];
 
-    // Create socket
     sock = socket(AF_INET, SOCK_DGRAM, 0);
 
     if (sock < 0) {
@@ -23,12 +22,10 @@ int main() {
         return 1;
     }
 
-    // Configure server address
     server.sin_family = AF_INET;
     server.sin_port = htons(PORT);
     server.sin_addr.s_addr = INADDR_ANY;
 
-    // Bind socket
     if (bind(sock,
              (struct sockaddr *)&server,
              sizeof(server)) < 0) {
@@ -40,7 +37,6 @@ int main() {
 
     printf("[Server] Waiting for client...\n");
 
-    // Receive message
     memset(buffer, 0, SIZE);
 
     recvfrom(sock,
@@ -52,7 +48,6 @@ int main() {
 
     printf("[Server] Received: %s\n", buffer);
 
-    // Send response
     char response[] = "Hello from UDP server";
 
     sendto(sock,
@@ -64,7 +59,6 @@ int main() {
 
     printf("[Server] Response sent.\n");
 
-    // Close socket
     close(sock);
 
     return 0;

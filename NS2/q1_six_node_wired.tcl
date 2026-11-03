@@ -13,21 +13,17 @@
 #   ns q1_six_node_wired.tcl
 # ==============================================================================
 
-# 1. Initialize Simulator
 set ns [new Simulator]
 
-# Define packet flow colors for NAM visualization
-$ns color 1 Blue     ;# Flow 1: TCP/FTP traffic (n0 -> n4)
-$ns color 2 Red      ;# Flow 2: UDP/CBR traffic (n1 -> n5)
+$ns color 1 Blue
+$ns color 2 Red
 
-# 2. Open Trace Files
 set tf [open q1_six_node_wired.tr w]
 $ns trace-all $tf
 
 set nf [open q1_six_node_wired.nam w]
 $ns namtrace-all $nf
 
-# 3. Finish Procedure
 proc finish {} {
     global ns tf nf
     $ns flush-trace
@@ -40,15 +36,13 @@ proc finish {} {
     exit 0
 }
 
-# 4. Create Six Nodes
-set n0 [$ns node]   ;# Source 1 (TCP)
-set n1 [$ns node]   ;# Source 2 (UDP)
-set n2 [$ns node]   ;# Intermediate Gateway/Router 1
-set n3 [$ns node]   ;# Intermediate Gateway/Router 2
-set n4 [$ns node]   ;# Destination 1 (TCP Sink)
-set n5 [$ns node]   ;# Destination 2 (UDP Null Sink)
+set n0 [$ns node]
+set n1 [$ns node]
+set n2 [$ns node]
+set n3 [$ns node]
+set n4 [$ns node]
+set n5 [$ns node]
 
-# Set node labels and colors for NAM
 $n0 label "Source 0 (TCP)"
 $n1 label "Source 1 (UDP)"
 $n2 label "Router 1"
@@ -63,38 +57,26 @@ $n3 color "brown"
 $n4 color "blue"
 $n5 color "red"
 
-# 5. Create Duplex Links with DIFFERENT Configurations
-# Syntax: $ns duplex-link <node1> <node2> <bandwidth> <delay> <queue_type>
-
-# Link n0 - n2: 2 Mbps, 10 ms delay, DropTail queue
 $ns duplex-link $n0 $n2 2Mb 10ms DropTail
 
-# Link n1 - n2: 1.5 Mbps, 20 ms delay, DropTail queue
 $ns duplex-link $n1 $n2 1.5Mb 20ms DropTail
 
-# Link n2 - n3 (Core / Bottleneck): 1 Mbps, 30 ms delay, DropTail queue
 $ns duplex-link $n2 $n3 1Mb 30ms DropTail
 
-# Link n3 - n4: 2 Mbps, 10 ms delay, DropTail queue
 $ns duplex-link $n3 $n4 2Mb 10ms DropTail
 
-# Link n3 - n5: 512 Kbps, 15 ms delay, DropTail queue
 $ns duplex-link $n3 $n5 512Kb 15ms DropTail
 
-# Set queue limit on bottleneck link
 $ns queue-limit $n2 $n3 10
 
-# 6. Configure Link Layouts for NAM Display
 $ns duplex-link-op $n0 $n2 orient right-down
 $ns duplex-link-op $n1 $n2 orient right-up
 $ns duplex-link-op $n2 $n3 orient right
 $ns duplex-link-op $n3 $n4 orient right-up
 $ns duplex-link-op $n3 $n5 orient right-down
 
-# Display queue on bottleneck link
 $ns duplex-link-op $n2 $n3 queuePos 0.5
 
-# 7. Configure Flow 1: TCP with FTP (n0 -> n4)
 set tcp [new Agent/TCP]
 $tcp set class_ 1
 $tcp set fid_ 1
@@ -109,7 +91,6 @@ set ftp [new Application/FTP]
 $ftp attach-agent $tcp
 $ftp set type_ FTP
 
-# 8. Configure Flow 2: UDP with CBR (n1 -> n5)
 set udp [new Agent/UDP]
 $udp set class_ 2
 $udp set fid_ 2
@@ -126,13 +107,10 @@ $cbr set packetSize_ 1000
 $cbr set rate_ 500Kb
 $cbr set random_ false
 
-# 9. Schedule Simulation Events
 $ns at 0.5 "$ftp start"
 $ns at 1.0 "$cbr start"
 $ns at 4.0 "$cbr stop"
 $ns at 4.5 "$ftp stop"
 $ns at 5.0 "finish"
 
-# 10. Run Simulation
 $ns run
-

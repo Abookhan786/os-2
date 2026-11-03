@@ -43,14 +43,12 @@ int main(int argc, char *argv[]) {
 
     INIT_NETWORK();
 
-    // 1. Create UDP socket (SOCK_DGRAM)
     if ((client_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // 2. Set server address
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
@@ -62,7 +60,7 @@ int main(int argc, char *argv[]) {
     printf("====================================================\n\n");
 
     while (1) {
-        // 3. Prompt user for message
+
         printf("Client: ");
         memset(buffer, 0, BUFFER_SIZE);
         if (fgets(buffer, BUFFER_SIZE, stdin) == NULL) {
@@ -70,20 +68,17 @@ int main(int argc, char *argv[]) {
         }
         buffer[strcspn(buffer, "\r\n")] = '\0';
 
-        // 4. Send message to server
         if (sendto(client_fd, buffer, strlen(buffer), 0,
                    (struct sockaddr *)&server_addr, addr_len) < 0) {
             perror("sendto error");
             break;
         }
 
-        // Check if client wishes to terminate
         if (strcasecmp(buffer, "exit") == 0 || strcasecmp(buffer, "bye") == 0) {
             printf("\n[Client]: You ended the chat session.\n");
             break;
         }
 
-        // 5. Receive reply from server
         memset(buffer, 0, BUFFER_SIZE);
         int bytes_received = recvfrom(client_fd, buffer, BUFFER_SIZE - 1, 0,
                                       (struct sockaddr *)&server_addr, &addr_len);
@@ -97,14 +92,12 @@ int main(int argc, char *argv[]) {
 
         printf("[Server]: %s\n", buffer);
 
-        // Check if server terminated
         if (strcasecmp(buffer, "exit") == 0 || strcasecmp(buffer, "bye") == 0) {
             printf("\n[Client]: Server has left the chat. Exiting...\n");
             break;
         }
     }
 
-    // 6. Cleanup & close
     CLOSE_SOCKET(client_fd);
     CLEANUP_NETWORK();
     printf("Client socket closed.\n");

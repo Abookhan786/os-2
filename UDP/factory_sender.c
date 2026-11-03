@@ -36,15 +36,14 @@
 #define CONTROL_ROOM_PORT 6006
 #define CONTROL_ROOM_IP "127.0.0.1"
 
-/* Factory Machine Status Telemetry Structure */
 typedef struct {
     int seq_no;
     int machine_id;
     char machine_name[32];
-    float temperature;    // in Celsius
-    float pressure;       // in Bar
-    float vibration;      // in mm/s
-    int rpm;              // Motor RPM
+    float temperature;
+    float pressure;
+    float vibration;
+    int rpm;
 } MachineStatus;
 
 int main(int argc, char *argv[]) {
@@ -55,14 +54,12 @@ int main(int argc, char *argv[]) {
 
     INIT_NETWORK();
 
-    // 1. Create UDP socket
     if ((sender_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // 2. Set Control Room Address
     memset(&dest_addr, 0, sizeof(dest_addr));
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_port = htons(CONTROL_ROOM_PORT);
@@ -85,13 +82,11 @@ int main(int argc, char *argv[]) {
     for (int i = 1; i <= total_reports; i++) {
         machine.seq_no = i;
 
-        // Simulate sensor variations under operating load
-        machine.temperature += 2.5f;       // Temperature increases as work continues
+        machine.temperature += 2.5f;
         machine.pressure += (i % 2 == 0) ? 0.35f : -0.15f;
-        machine.vibration += 0.38f;        // Vibration gradually rises
+        machine.vibration += 0.38f;
         machine.rpm += (i % 2 == 0) ? 50 : -30;
 
-        // 3. Fast datagram transmission (no handshake or connection latency)
         int sent_bytes = sendto(sender_fd, (const char *)&machine, sizeof(machine), 0,
                                 (struct sockaddr *)&dest_addr, sizeof(dest_addr));
 
@@ -104,11 +99,9 @@ int main(int argc, char *argv[]) {
                machine.seq_no, machine.machine_id, machine.machine_name,
                machine.temperature, machine.pressure, machine.vibration, machine.rpm, sent_bytes);
 
-        // Transmit every 1 second (1000 ms) for real-time factory monitoring
         SLEEP_MS(1000);
     }
 
-    // Send end indicator
     machine.seq_no = -1;
     sendto(sender_fd, (const char *)&machine, sizeof(machine), 0,
            (struct sockaddr *)&dest_addr, sizeof(dest_addr));

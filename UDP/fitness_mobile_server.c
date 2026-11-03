@@ -33,13 +33,12 @@
 
 #define FITNESS_PORT 7007
 
-/* Lightweight Fitness Telemetry Frame */
 typedef struct {
     int seq_no;
     char device_name[24];
-    int heart_rate;   // Beats per minute (BPM)
-    int step_count;   // Total steps taken
-    float calories;   // Active kcal burned
+    int heart_rate;
+    int step_count;
+    float calories;
 } FitnessData;
 
 int main() {
@@ -50,14 +49,12 @@ int main() {
 
     INIT_NETWORK();
 
-    // 1. Create UDP Socket (SOCK_DGRAM - zero connection overhead)
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Socket creation failed");
         CLEANUP_NETWORK();
         exit(EXIT_FAILURE);
     }
 
-    // 2. Bind to Mobile App Reception Port
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -79,7 +76,7 @@ int main() {
     printf("-------+------------------+-------------+--------------+-------------+------------------------\n");
 
     while (1) {
-        // 3. Receive lightweight datagram
+
         int bytes_received = recvfrom(server_fd, (char *)&data, sizeof(data), 0,
                                       (struct sockaddr *)&client_addr, &addr_len);
 
@@ -88,14 +85,12 @@ int main() {
             break;
         }
 
-        // Check for session end signal
         if (data.seq_no == -1) {
             printf("-------+------------------+-------------+--------------+-------------+------------------------\n");
             printf("[MOBILE APP]: Sync session ended by wearable device '%s'.\n", data.device_name);
             break;
         }
 
-        // Evaluate Heart Rate Zone
         char zone[32] = "[OPTIMAL / REST]";
         if (data.heart_rate >= 135) {
             strcpy(zone, "! HIGH HR / PEAK !");

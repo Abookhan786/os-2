@@ -18,51 +18,44 @@
     #define SLEEP_MS(ms) usleep((ms) * 1000)
 #endif
 
-/* Frame structure */
 typedef struct {
-    int seq_no;          // 0 or 1 (Alternating Bit Protocol)
-    char payload[64];    // Data contents
+    int seq_no;
+    char payload[64];
 } Frame;
 
-/* Acknowledgment structure */
 typedef struct {
-    int ack_no;          // Sequence number of frame being acknowledged
+    int ack_no;
 } AckPacket;
 
-/* Receiver state structure */
 typedef struct {
-    int expected_seq;    // Expected sequence number (0 or 1)
-    int duplicate_count; // Number of duplicate frames caught
-    int total_accepted;  // Number of unique frames accepted
+    int expected_seq;
+    int duplicate_count;
+    int total_accepted;
 } ReceiverState;
 
-/*
- * Receiver Function:
- * Handles incoming frame with duplicate filtering logic.
- */
 int receiver_process_frame(ReceiverState *rx, Frame f, int handle_duplicates) {
     printf("  [RECEIVER]: Received Frame with Seq No: %d, Payload: \"%s\"\n", f.seq_no, f.payload);
 
     if (handle_duplicates) {
-        // CORRECT ARQ LOGIC:
+
         if (f.seq_no == rx->expected_seq) {
-            // New expected frame received
+
             printf("  [RECEIVER]: -> NEW FRAME ACCEPTED into application layer!\n");
-            rx->expected_seq = 1 - rx->expected_seq; // Toggle expected seq (0 -> 1 -> 0)
+            rx->expected_seq = 1 - rx->expected_seq;
             rx->total_accepted++;
             printf("  [RECEIVER]: -> Sending ACK %d to Sender...\n", f.seq_no);
-            return 1; // Success
+            return 1;
         } else {
-            // Duplicate frame detected!
+
             rx->duplicate_count++;
             printf("  [RECEIVER ALERT]: -> DUPLICATE FRAME DETECTED (Expected %d, got %d)!\n",
                    rx->expected_seq, f.seq_no);
             printf("  [RECEIVER ACTION]: -> DISCARDING duplicate payload data (preventing data corruption).\n");
             printf("  [RECEIVER ACTION]: -> RE-SENDING ACK %d to re-synchronize Sender.\n", f.seq_no);
-            return 2; // Duplicate handled
+            return 2;
         }
     } else {
-        // UNMODIFIED / BUGGY LOGIC (Without duplicate check):
+
         printf("  [BUGGY RECEIVER]: Blindly accepted Frame %d without sequence check!\n", f.seq_no);
         printf("  [BUGGY RECEIVER WARNING]: DUPLICATE DATA WRITTEN TO APPLICATION BUFFER!\n");
         rx->total_accepted++;
@@ -71,8 +64,8 @@ int receiver_process_frame(ReceiverState *rx, Frame f, int handle_duplicates) {
 }
 
 int main() {
-    int timeout_limit_ms = 1500;  // Sender timeout timer = 1.5 seconds
-    int ack_delay_ms = 2200;      // Network delay on ACK = 2.2 seconds (> timeout)
+    int timeout_limit_ms = 1500;
+    int ack_delay_ms = 2200;
 
     printf("========================================================================================\n");
     printf("             STOP-AND-WAIT ARQ SIMULATION: DELAYED ACK & DUPLICATE HANDLING             \n");
@@ -82,7 +75,6 @@ int main() {
     printf("  - Network Delay on ACK Link     : %d ms (ACK arrives AFTER timeout has expired!)\n", ack_delay_ms);
     printf("========================================================================================\n\n");
 
-    // Initialize Receiver State
     ReceiverState rx;
     rx.expected_seq = 0;
     rx.duplicate_count = 0;
@@ -99,14 +91,12 @@ int main() {
 
     SLEEP_MS(300);
 
-    // Receiver gets the frame
     printf("[T = 0.3s] >>> Frame arrives at Receiver >>>\n");
     receiver_process_frame(&rx, frame0, 1);
 
     printf("\n[T = 0.4s] [NETWORK]: Receiver generates ACK 0, but transmission link experiences HIGH JITTER/DELAY!\n");
     printf("[T = 0.4s] [NETWORK]: ACK 0 is delayed in transit for %d ms...\n\n", ack_delay_ms);
 
-    // Sender waiting for ACK
     printf("[T = 0.4s to 1.5s] [SENDER]: Waiting for ACK 0...\n");
     SLEEP_MS(1200);
 
@@ -119,7 +109,6 @@ int main() {
 
     SLEEP_MS(700);
 
-    // Now delayed ACK finally arrives at sender
     printf("[T = 2.2s] [SENDER]: Late delayed ACK 0 finally arrives at Sender.\n");
     printf("[T = 2.2s] [SENDER]: (Notice: Retransmitted duplicate frame is already in flight!)\n\n");
 
@@ -130,7 +119,6 @@ int main() {
     printf("----------------------------------------------------------------------------------------\n");
     printf("[T = 2.6s] >>> Retransmitted duplicate Frame 0 arrives at Receiver >>>\n");
 
-    // Receiver processes the duplicate frame with modified logic
     receiver_process_frame(&rx, frame0, 1);
 
     SLEEP_MS(500);
